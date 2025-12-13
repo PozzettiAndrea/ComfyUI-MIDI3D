@@ -1,0 +1,23 @@
+# ComfyUI-MIDI3D requirements
+# Note: These should already be installed if MIDI-3D is set up
+
+# Core dependencies
+numpy>=1.22.0
+Pillow>=9.0.0
+trimesh>=4.0.0
+scikit-image>=0.20.0
+
+# HuggingFace for model downloading
+huggingface_hub
+diffusers>=0.25.0
+transformers>=4.40.0
+
+# PyTorch ecosystem
+einops
+peft
+
+# MIDI-3D specific (should be installed with MIDI-3D)
+# torch-cluster
+# gradio
+# omegaconf
+# pytorch-lightning
