@@ -115,11 +115,11 @@ class DownloadAndLoadMIDI3DModel:
         midi3d_path = get_midi3d_path()
         source_model_path = midi3d_path / "pretrained_weights" / "MIDI-3D"
 
-        if source_model_path.exists() and (source_model_path / "config.json").exists():
+        if source_model_path.exists() and (source_model_path / "model_index.json").exists():
             print(f"[MIDI-3D] Found model in source: {source_model_path}")
             return source_model_path
 
-        if model_path.exists() and (model_path / "config.json").exists():
+        if model_path.exists() and (model_path / "model_index.json").exists():
             print(f"[MIDI-3D] Found model: {model_path}")
             return model_path
 
@@ -127,8 +127,8 @@ class DownloadAndLoadMIDI3DModel:
         print(f"[MIDI-3D] Downloading model from HuggingFace...")
         cls._download_model(model_path)
 
-        if not (model_path / "config.json").exists():
-            raise RuntimeError(f"Download completed but config.json not found: {model_path}")
+        if not (model_path / "model_index.json").exists():
+            raise RuntimeError(f"Download completed but model_index.json not found: {model_path}")
 
         return model_path
 

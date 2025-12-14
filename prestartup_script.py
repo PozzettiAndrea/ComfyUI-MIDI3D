@@ -17,10 +17,6 @@ def copy_example_assets():
         input_folder = folder_paths.get_input_directory()
         custom_node_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # Create input/3d subdirectory for 3D files
-        input_3d_folder = os.path.join(input_folder, "3d")
-        os.makedirs(input_3d_folder, exist_ok=True)
-
         # Copy entire assets/ folder structure
         assets_folder = os.path.join(custom_node_dir, "assets")
         if not os.path.exists(assets_folder):
@@ -32,10 +28,10 @@ def copy_example_assets():
             rel_path = os.path.relpath(root, assets_folder)
 
             if rel_path != '.':
-                dest_dir = os.path.join(input_3d_folder, rel_path)
+                dest_dir = os.path.join(input_folder, rel_path)
                 os.makedirs(dest_dir, exist_ok=True)
             else:
-                dest_dir = input_3d_folder
+                dest_dir = input_folder
 
             for file in files:
                 source_file = os.path.join(root, file)
@@ -45,12 +41,12 @@ def copy_example_assets():
                     shutil.copy2(source_file, dest_file)
                     copied_count += 1
                     rel_dest = os.path.join(rel_path, file) if rel_path != '.' else file
-                    print(f"[MIDI-3D] Copied {rel_dest} to input/3d/")
+                    print(f"[MIDI-3D] Copied {rel_dest} to input/")
 
         if copied_count > 0:
-            print(f"[MIDI-3D] [OK] Copied {copied_count} asset(s) to {input_3d_folder}")
+            print(f"[MIDI-3D] [OK] Copied {copied_count} asset(s) to {input_folder}")
         else:
-            print(f"[MIDI-3D] All assets already exist in {input_3d_folder}")
+            print(f"[MIDI-3D] All assets already exist in {input_folder}")
 
     except Exception as e:
         print(f"[MIDI-3D] Error copying assets: {e}")
