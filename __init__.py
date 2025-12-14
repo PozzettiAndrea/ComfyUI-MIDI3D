@@ -14,6 +14,13 @@ Nodes:
 Integrates with GeometryPack's TRIMESH type for seamless mesh pipeline.
 """
 
+# Add vendored midi module to sys.path so diffusers can import it
+import sys
+from pathlib import Path
+_midi_path = str(Path(__file__).parent)
+if _midi_path not in sys.path:
+    sys.path.insert(0, _midi_path)
+
 from .nodes import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

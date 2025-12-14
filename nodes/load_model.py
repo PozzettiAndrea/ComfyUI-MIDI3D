@@ -8,7 +8,6 @@ from .utils import (
     _MODEL_CACHE,
     get_midi3d_path,
     get_midi3d_models_path,
-    setup_midi3d_imports,
     get_device,
 )
 
@@ -72,9 +71,6 @@ class DownloadAndLoadMIDI3DModel:
 
         # Download if needed
         model_path = self._get_or_download_model()
-
-        # Setup imports
-        setup_midi3d_imports()
 
         # Load pipeline
         from midi.pipelines.pipeline_midi import MIDIPipeline

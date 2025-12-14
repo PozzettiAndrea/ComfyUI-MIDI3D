@@ -1,7 +1,6 @@
 """Utility functions for ComfyUI-MIDI3D nodes."""
 
 import os
-import sys
 import torch
 import numpy as np
 import trimesh
@@ -17,8 +16,8 @@ _MODEL_CACHE: Dict[str, Any] = {}
 
 
 def get_midi3d_path() -> Path:
-    """Get the path to the MIDI-3D source code."""
-    return Path(__file__).parent.parent.parent / "MIDI-3D"
+    """Get the path to the vendored MIDI-3D source code."""
+    return Path(__file__).parent.parent / "midi"
 
 
 def get_midi3d_models_path() -> Path:
@@ -26,13 +25,6 @@ def get_midi3d_models_path() -> Path:
     models_dir = Path(folder_paths.models_dir) / "midi3d"
     models_dir.mkdir(parents=True, exist_ok=True)
     return models_dir
-
-
-def setup_midi3d_imports():
-    """Add MIDI-3D to Python path for imports."""
-    midi3d_path = get_midi3d_path()
-    if str(midi3d_path) not in sys.path:
-        sys.path.insert(0, str(midi3d_path))
 
 
 def get_device() -> torch.device:
@@ -149,3 +141,55 @@ def split_rgb_mask(rgb_image: Image.Image, seg_image: Image.Image):
         scene_rgbs.append(rgb_image)
 
     return instance_rgbs, instance_masks, scene_rgbs
+
+
+class MIDI3DSceneToTrimesh:
+    """
+    Convert MIDI3D Scene to single merged Trimesh.
+
+    Takes a Scene object containing multiple meshes and merges them into
+    a single Trimesh for export or visualization.
+    """
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "scene": ("MIDI3D_SCENE", {
+                    "tooltip": "Scene from MIDI3DProcess"
+                }),
+            }
+        }
+
+    RETURN_TYPES = ("TRIMESH",)
+    RETURN_NAMES = ("mesh",)
+    OUTPUT_TOOLTIPS = ("Merged trimesh from all scene objects",)
+    FUNCTION = "convert"
+    CATEGORY = "MIDI3D/Utils"
+    DESCRIPTION = "Merge all meshes in a Scene into a single Trimesh."
+
+    def convert(self, scene):
+        """Merge scene into single trimesh."""
+        if len(scene.geometry) == 1:
+            # Single mesh: extract it
+            mesh = list(scene.geometry.values())[0]
+        else:
+            # Multiple meshes: concatenate
+            mesh = scene.dump(concatenate=True)
+
+        # Preserve metadata
+        if hasattr(scene, 'metadata'):
+            mesh.metadata.update(scene.metadata)
+
+        print(f"[MIDI-3D] Merged scene to single mesh: {len(mesh.vertices)} vertices, {len(mesh.faces)} faces")
+
+        return (mesh,)
+
+
+NODE_CLASS_MAPPINGS = {
+    "MIDI3DSceneToTrimesh": MIDI3DSceneToTrimesh,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "MIDI3DSceneToTrimesh": "Scene to Trimesh",
+}

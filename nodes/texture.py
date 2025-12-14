@@ -1,5 +1,31 @@
 """Texture nodes for ComfyUI-MIDI3D."""
 
+# Compatibility shim for pymeshlab versions
+# pymeshlab >= 2023 renamed Percentage to PercentageValue
+import pymeshlab
+if not hasattr(pymeshlab, 'Percentage'):
+    pymeshlab.Percentage = pymeshlab.PercentageValue
+
+# Patch mvadapter to use torch-native backend instead of torch-cuda
+# This avoids JIT compilation which requires CUDA_HOME
+def _patch_mvadapter_backend():
+    """Monkey-patch mvadapter to use torch-native backend for Poisson blending."""
+    try:
+        # Patch BEFORE pipeline_texture imports CameraProjection
+        import mvadapter.utils.mesh_utils.projection as proj_module
+        _orig_camera_proj_init = proj_module.CameraProjection.__init__
+
+        def _patched_camera_proj_init(self, pb_backend, bg_remover, device, context_type="gl"):
+            # Force torch-native backend, ignore whatever was passed
+            _orig_camera_proj_init(self, "torch-native", bg_remover, device, context_type)
+
+        proj_module.CameraProjection.__init__ = _patched_camera_proj_init
+    except ImportError:
+        # mvadapter not installed yet, will patch when it's imported
+        pass
+
+_patch_mvadapter_backend()
+
 import os
 import torch
 import trimesh
@@ -9,7 +35,7 @@ from typing import Any, Dict, List
 from PIL import Image
 from tqdm import tqdm
 
-from .utils import get_device, get_midi3d_path, setup_midi3d_imports
+from .utils import get_device, get_midi3d_path
 
 
 # Global texture model cache
@@ -62,9 +88,6 @@ class MIDI3DLoadTextureModels:
 
         print("[MIDI-3D] Loading texture models...")
 
-        # Setup imports
-        setup_midi3d_imports()
-
         # Load MV-Adapter pipeline
         print("[MIDI-3D] Loading MV-Adapter pipeline...")
         ig2mv_pipe = self._load_ig2mv_pipeline(device, torch_dtype)
@@ -97,11 +120,21 @@ class MIDI3DLoadTextureModels:
         adapter_path = "huanngzh/mv-adapter"
         num_views = 6
 
-        # Load VAE
-        vae = AutoencoderKL.from_pretrained(vae_model)
+        # Load VAE (small model, safe to stage in CPU RAM)
+        vae = AutoencoderKL.from_pretrained(
+            vae_model,
+            torch_dtype=dtype,
+        ).to(device)
 
-        # Load pipeline
-        pipe = MVAdapterI2MVSDXLPipeline.from_pretrained(base_model, vae=vae)
+        # Load pipeline with device_map for memory-efficient loading
+        # device_map="auto" loads weights directly to GPU, avoiding CPU RAM bottleneck
+        pipe = MVAdapterI2MVSDXLPipeline.from_pretrained(
+            base_model,
+            vae=vae,
+            torch_dtype=dtype,
+            low_cpu_mem_usage=True,
+            device_map="cuda",
+        )
 
         # Setup scheduler
         pipe.scheduler = ShiftSNRScheduler.from_scheduler(
@@ -120,8 +153,13 @@ class MIDI3DLoadTextureModels:
             weight_name="mvadapter_ig2mv_partial_sdxl.safetensors"
         )
 
-        pipe.to(device=device, dtype=dtype)
+        # NOTE: Do NOT call pipe.to() - device_map already placed components
+        # Only move custom components that aren't part of the device_map
         pipe.cond_encoder.to(device=device, dtype=dtype)
+
+        # Move UNet to device to ensure adapter weights are on GPU
+        # The custom adapter adds new parameters that aren't in device_map
+        pipe.unet.to(device=device, dtype=dtype)
         pipe.enable_vae_slicing()
 
         return pipe
@@ -174,7 +212,7 @@ class MIDI3DTexture:
                 "texture_models": ("MIDI3D_TEXTURE_MODELS", {
                     "tooltip": "Loaded texture models from MIDI3DLoadTextureModels"
                 }),
-                "scene": ("TRIMESH", {
+                "scene": ("MIDI3D_SCENE", {
                     "tooltip": "Scene from MIDI3DProcess"
                 }),
                 "preprocessed": ("MIDI3D_DATA", {
@@ -204,9 +242,9 @@ class MIDI3DTexture:
             }
         }
 
-    RETURN_TYPES = ("TRIMESH",)
+    RETURN_TYPES = ("MIDI3D_SCENE",)
     RETURN_NAMES = ("textured_scene",)
-    OUTPUT_TOOLTIPS = ("Textured 3D scene",)
+    OUTPUT_TOOLTIPS = ("Textured 3D scene with individual meshes",)
     FUNCTION = "apply_texture"
     CATEGORY = "MIDI3D"
     DESCRIPTION = "Apply textures to MIDI-3D meshes using MV-Adapter multi-view generation."
@@ -221,8 +259,6 @@ class MIDI3DTexture:
         guidance_scale: float = 3.0,
     ):
         """Apply textures to meshes."""
-        setup_midi3d_imports()
-
         ig2mv_pipe = texture_models["ig2mv_pipe"]
         texture_pipe = texture_models["texture_pipe"]
         device = texture_models["device"]

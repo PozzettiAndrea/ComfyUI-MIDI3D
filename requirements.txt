@@ -15,6 +15,7 @@ transformers>=4.40.0
 # PyTorch ecosystem
 einops
 peft
+jaxtyping
 
 # MIDI-3D specific (should be installed with MIDI-3D)
 # torch-cluster

@@ -7,7 +7,6 @@ import numpy as np
 from skimage import measure
 from typing import Any, Dict
 
-from .utils import setup_midi3d_imports
 
 
 class MIDI3DProcess:
@@ -53,9 +52,9 @@ class MIDI3DProcess:
             }
         }
 
-    RETURN_TYPES = ("TRIMESH",)
+    RETURN_TYPES = ("MIDI3D_SCENE",)
     RETURN_NAMES = ("scene",)
-    OUTPUT_TOOLTIPS = ("Generated 3D scene as trimesh",)
+    OUTPUT_TOOLTIPS = ("Generated 3D scene with individual meshes",)
     FUNCTION = "process"
     CATEGORY = "MIDI3D"
     DESCRIPTION = "Generate 3D scene from image using MIDI-3D multi-instance diffusion."
@@ -71,7 +70,6 @@ class MIDI3DProcess:
         """Run MIDI-3D inference."""
         print(f"[MIDI-3D] Running inference (steps={num_inference_steps}, guidance={guidance_scale})")
 
-        setup_midi3d_imports()
         from midi.utils.smoothing import smooth_gpu
 
         pipe = model["pipe"]
@@ -136,16 +134,15 @@ class MIDI3DProcess:
             trimeshes.append(mesh)
             print(f"[MIDI-3D] Instance {idx + 1}: {len(mesh.vertices)} vertices, {len(mesh.faces)} faces")
 
-        # Compose scene
+        # Compose scene - keep individual meshes
         if len(trimeshes) == 1:
-            output_mesh = trimeshes[0]
+            # Single mesh: wrap in Scene for consistency
+            output_scene = trimesh.Scene([trimeshes[0]])
         else:
-            # Concatenate all meshes into one
-            scene = trimesh.Scene(trimeshes)
-            output_mesh = scene.dump(concatenate=True)
+            output_scene = trimesh.Scene(trimeshes)
 
-        # Add metadata
-        output_mesh.metadata.update({
+        # Add metadata to scene
+        output_scene.metadata.update({
             'source': 'midi3d',
             'num_instances': num_instances,
             'inference_time': inference_time,
@@ -154,9 +151,12 @@ class MIDI3DProcess:
             'seed': seed,
         })
 
-        print(f"[MIDI-3D] Output scene: {len(output_mesh.vertices)} vertices, {len(output_mesh.faces)} faces")
+        # Count total vertices/faces across all meshes
+        total_vertices = sum(len(mesh.vertices) for mesh in trimeshes)
+        total_faces = sum(len(mesh.faces) for mesh in trimeshes)
+        print(f"[MIDI-3D] Output scene: {total_vertices} vertices, {total_faces} faces")
 
-        return (output_mesh,)
+        return (output_scene,)
 
 
 NODE_CLASS_MAPPINGS = {
