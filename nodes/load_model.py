@@ -34,6 +34,10 @@ class DownloadAndLoadMIDI3DModel:
                     "default": "bfloat16",
                     "tooltip": "Model precision (bfloat16 recommended for RTX 30xx+)"
                 }),
+                "gpu_cache": ("BOOLEAN", {
+                    "default": False,
+                    "tooltip": "Keep model on GPU after inference. When False, offloads to CPU to free VRAM."
+                }),
             }
         }
 
@@ -44,7 +48,7 @@ class DownloadAndLoadMIDI3DModel:
     CATEGORY = "MIDI3D"
     DESCRIPTION = "Download and load MIDI-3D model for multi-instance 3D scene generation from images."
 
-    def load_model(self, model: str, dtype: str = "bfloat16"):
+    def load_model(self, model: str, dtype: str = "bfloat16", gpu_cache: bool = False):
         """Load the MIDI-3D pipeline."""
         print(f"[MIDI-3D] Loading model: {model}")
 
@@ -67,7 +71,15 @@ class DownloadAndLoadMIDI3DModel:
 
         if cache_key in _MODEL_CACHE:
             print(f"[MIDI-3D] Using cached model")
-            return (_MODEL_CACHE[cache_key],)
+            cached = _MODEL_CACHE[cache_key]
+            # Move back to GPU if it was offloaded (check via unet device)
+            pipe_device = getattr(cached["pipe"].unet, "device", None)
+            if pipe_device is not None and pipe_device.type == "cpu" and device.type != "cpu":
+                print(f"[MIDI-3D] Moving model back to {device}")
+                cached["pipe"].to(device, torch_dtype)
+            # Update gpu_cache setting
+            cached["gpu_cache"] = gpu_cache
+            return (cached,)
 
         # Download if needed
         model_path = self._get_or_download_model()
@@ -94,6 +106,7 @@ class DownloadAndLoadMIDI3DModel:
             "pipe": pipe,
             "device": device,
             "dtype": torch_dtype,
+            "gpu_cache": gpu_cache,
         }
 
         _MODEL_CACHE[cache_key] = model_wrapper

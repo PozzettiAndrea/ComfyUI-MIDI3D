@@ -21,6 +21,9 @@ dependencies = [
     "einops",
     "peft",
 
+    # GLTF export support
+    "gltflib",
+
     # Note: Additional dependencies should be installed with MIDI-3D
 ]
 

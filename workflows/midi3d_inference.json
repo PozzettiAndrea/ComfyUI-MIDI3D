@@ -1,8 +1,8 @@
 {
   "id": "09bedc58-8eee-45e6-b44a-3504716845c2",
   "revision": 0,
-  "last_node_id": 8,
-  "last_link_id": 9,
+  "last_node_id": 10,
+  "last_link_id": 11,
   "nodes": [
     {
       "id": 1,
@@ -36,53 +36,6 @@
       "widgets_values": [
         "MIDI-3D",
         "bfloat16"
-      ]
-    },
-    {
-      "id": 3,
-      "type": "MIDI3DProcess",
-      "pos": [
-        690.328125,
-        395.1015625
-      ],
-      "size": [
-        284.205078125,
-        150
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MIDI3D_MODEL",
-          "link": 2
-        },
-        {
-          "name": "preprocessed",
-          "type": "MIDI3D_DATA",
-          "link": 1
-        }
-      ],
-      "outputs": [
-        {
-          "name": "scene",
-          "type": "TRIMESH",
-          "links": [
-            4
-          ]
-        }
-      ],
-      "properties": {
-        "aux_id": "PozzettiAndrea/ComfyUI-MIDI3D",
-        "ver": "d012a7a0ea9b95095b1c44c4da69788fbb080e03",
-        "Node name for S&R": "MIDI3DProcess"
-      },
-      "widgets_values": [
-        50,
-        7,
-        236265776,
-        "randomize"
       ]
     },
     {
@@ -247,35 +200,119 @@
       ]
     },
     {
-      "id": 5,
-      "type": "GeomPackPreviewMeshVTK",
+      "id": 9,
+      "type": "MIDI3DSceneToTrimesh",
       "pos": [
-        1112.94140625,
-        354.8984375
+        999.8289089598672,
+        379.30284630101426
       ],
       "size": [
-        512,
-        702
+        155.3248046875,
+        26
       ],
       "flags": {},
       "order": 6,
       "mode": 0,
       "inputs": [
         {
+          "name": "scene",
+          "type": "MIDI3D_SCENE",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "mesh",
+          "type": "TRIMESH",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "PozzettiAndrea/ComfyUI-MIDI3D",
+        "ver": "3ec773dbf0c618cfa64fb12dbc051e001404257a",
+        "Node name for S&R": "MIDI3DSceneToTrimesh"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 10,
+      "type": "GeomPackPreviewMeshVTK",
+      "pos": [
+        1185.026242676704,
+        371.02202067689325
+      ],
+      "size": [
+        512,
+        702
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
           "name": "trimesh",
           "type": "TRIMESH",
-          "link": 4
+          "link": 11
         }
       ],
       "outputs": [],
       "properties": {
         "cnr_id": "comfyui-geometrypack",
-        "ver": "d19c31ebf956a107b3b543e9e686f438e8cf9cd2",
+        "ver": "2c4d3366c0eeebb731f2a706e2fee29ca495ae49",
         "Node name for S&R": "GeomPackPreviewMeshVTK"
       },
       "widgets_values": [
         "fields",
         ""
+      ]
+    },
+    {
+      "id": 3,
+      "type": "MIDI3DProcess",
+      "pos": [
+        690.328125,
+        395.1015625
+      ],
+      "size": [
+        284.205078125,
+        150
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MIDI3D_MODEL",
+          "link": 2
+        },
+        {
+          "name": "preprocessed",
+          "type": "MIDI3D_DATA",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "scene",
+          "type": "MIDI3D_SCENE",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "PozzettiAndrea/ComfyUI-MIDI3D",
+        "ver": "d012a7a0ea9b95095b1c44c4da69788fbb080e03",
+        "Node name for S&R": "MIDI3DProcess"
+      },
+      "widgets_values": [
+        50,
+        7,
+        42,
+        "fixed"
       ]
     }
   ],
@@ -295,14 +332,6 @@
       3,
       0,
       "MIDI3D_MODEL"
-    ],
-    [
-      4,
-      3,
-      0,
-      5,
-      0,
-      "TRIMESH"
     ],
     [
       7,
@@ -327,6 +356,22 @@
       2,
       0,
       "IMAGE"
+    ],
+    [
+      10,
+      3,
+      0,
+      9,
+      0,
+      "MIDI3D_SCENE"
+    ],
+    [
+      11,
+      9,
+      0,
+      10,
+      0,
+      "TRIMESH"
     ]
   ],
   "groups": [],
@@ -335,11 +380,11 @@
     "ds": {
       "scale": 1.025995973789367,
       "offset": [
-        276.7850492922702,
-        -29.34182995913793
+        -75.07960512411681,
+        -43.337377082939724
       ]
     },
-    "frontendVersion": "1.34.8",
+    "frontendVersion": "1.34.9",
     "workflowRendererVersion": "LG"
   },
   "version": 0.4

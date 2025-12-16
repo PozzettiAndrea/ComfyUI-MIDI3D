@@ -74,6 +74,7 @@ class MIDI3DProcess:
 
         pipe = model["pipe"]
         device = model["device"]
+        gpu_cache = model.get("gpu_cache", False)
 
         instance_rgbs = preprocessed["instance_rgbs"]
         instance_masks = preprocessed["instance_masks"]
@@ -104,6 +105,12 @@ class MIDI3DProcess:
 
         inference_time = time.time() - start_time
         print(f"[MIDI-3D] Diffusion completed in {inference_time:.2f}s")
+
+        # Offload to CPU if gpu_cache is False
+        if not gpu_cache:
+            print("[MIDI-3D] Offloading model to CPU...")
+            pipe.to("cpu")
+            torch.cuda.empty_cache()
 
         # Marching cubes to extract meshes
         print("[MIDI-3D] Extracting meshes via marching cubes...")

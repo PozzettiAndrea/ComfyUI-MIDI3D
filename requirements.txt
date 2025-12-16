@@ -17,6 +17,9 @@ einops
 peft
 jaxtyping
 
+# GLTF export support
+gltflib
+
 # MIDI-3D specific (should be installed with MIDI-3D)
 # torch-cluster
 # gradio
