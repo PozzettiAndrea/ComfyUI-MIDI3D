@@ -1,3 +1,7 @@
+----------
+Work in Progress! This node is not finished.
+----------
+
 # ComfyUI-MIDI3D
 
 ComfyUI nodes for [MIDI-3D](https://github.com/MIDI-3D/MIDI-3D) multi-instance 3D scene generation.
@@ -86,6 +90,12 @@ pip install -r requirements.txt
 - jaxtyping
 
 See `requirements.txt` for complete dependencies.
+
+## Community
+
+Questions or feature requests? Open a [Discussion](https://github.com/PozzettiAndrea/ComfyUI-MIDI3D/discussions) on GitHub.
+
+Join the [Comfy3D Discord](https://discord.gg/PN743tE5) for help, updates, and chat about 3D workflows in ComfyUI.
 
 ## Credits
 
