@@ -95,7 +95,7 @@ See `requirements.txt` for complete dependencies.
 
 Questions or feature requests? Open a [Discussion](https://github.com/PozzettiAndrea/ComfyUI-MIDI3D/discussions) on GitHub.
 
-Join the [Comfy3D Discord](https://discord.gg/PN743tE5) for help, updates, and chat about 3D workflows in ComfyUI.
+Join the [Comfy3D Discord](https://discord.gg/bcdQCUjnHE) for help, updates, and chat about 3D workflows in ComfyUI.
 
 ## Credits
 
