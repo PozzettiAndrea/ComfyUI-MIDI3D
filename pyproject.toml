@@ -5,27 +5,7 @@ version = "0.0.1"
 license = { text = "MIT" }
 requires-python = ">=3.10"
 
-dependencies = [
-    # Core dependencies
-    "numpy>=1.22.0",
-    "Pillow>=9.0.0",
-    "trimesh>=4.0.0",
-    "scikit-image>=0.20.0",
-
-    # HuggingFace for model downloading
-    "huggingface-hub",
-    "diffusers>=0.25.0",
-    "transformers>=4.40.0",
-
-    # PyTorch ecosystem
-    "einops",
-    "peft",
-
-    # GLTF export support
-    "gltflib",
-
-    # Note: Additional dependencies should be installed with MIDI-3D
-]
+dynamic = ["dependencies"]
 
 [project.urls]
 Repository = "https://github.com/PozzettiAndrea/ComfyUI-MIDI3D"
@@ -41,3 +21,6 @@ Icon = ""
 [build-system]
 requires = ["setuptools>=45", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
